@@ -1,0 +1,16 @@
+{
+  "journal": {
+    "entries": []
+  },
+  "riskOfficer": {
+    "startingBalance": 38,
+    "currentBalance": 38,
+    "peakBalance": 38,
+    "lossStreak": 0,
+    "tradeCount": 0,
+    "trades": [],
+    "sessionDate": null,
+    "tradingDisabled": false,
+    "disableReason": null
+  }
+}
