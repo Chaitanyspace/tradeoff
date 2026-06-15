@@ -22,6 +22,25 @@ export function getDefaultDb() {
   return {
     journal: { entries: [] },
     riskOfficer: getDefaultRiskOfficerState(),
+    riskOfficePro: getDefaultRiskOfficeProState(),
+  };
+}
+
+export function getDefaultRiskOfficeProState(startingBalance = null) {
+  return {
+    startingBalance: startingBalance ?? 0,
+    currentBalance: startingBalance ?? 0,
+    peakBalance: startingBalance ?? 0,
+    lossStreak: 0,
+    winStreak: 0,
+    tradeCount: 0,
+    trades: [],
+    sessionDate: getTodayKey(),
+    tradingDisabled: false,
+    disableReason: null,
+    aggressionProfile: null,
+    maxTrades: 7,
+    isConfigured: false,
   };
 }
 
@@ -35,6 +54,10 @@ export function loadDb() {
       riskOfficer: {
         ...getDefaultRiskOfficerState(),
         ...parsed.riskOfficer,
+      },
+      riskOfficePro: {
+        ...getDefaultRiskOfficeProState(),
+        ...parsed.riskOfficePro,
       },
     };
   } catch {
@@ -67,6 +90,10 @@ export function importDbJson(file) {
           riskOfficer: {
             ...getDefaultRiskOfficerState(),
             ...parsed.riskOfficer,
+          },
+          riskOfficePro: {
+            ...getDefaultRiskOfficeProState(),
+            ...parsed.riskOfficePro,
           },
         });
       } catch (err) {

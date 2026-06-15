@@ -12,5 +12,20 @@
     "sessionDate": null,
     "tradingDisabled": false,
     "disableReason": null
+  },
+  "riskOfficePro": {
+    "startingBalance": 0,
+    "currentBalance": 0,
+    "peakBalance": 0,
+    "lossStreak": 0,
+    "winStreak": 0,
+    "tradeCount": 0,
+    "trades": [],
+    "sessionDate": null,
+    "tradingDisabled": false,
+    "disableReason": null,
+    "aggressionProfile": null,
+    "maxTrades": 7,
+    "isConfigured": false
   }
 }
