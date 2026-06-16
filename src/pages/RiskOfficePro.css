@@ -388,6 +388,59 @@
   opacity: 0.85;
 }
 
+.pro-scale-preview {
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.pro-scale-title {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  margin-bottom: 0.65rem;
+}
+
+.pro-scale-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.pro-scale-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  color: var(--text-muted);
+}
+
+.pro-scale-row--active {
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--text);
+}
+
+.pro-scale-bal {
+  font-weight: 700;
+  min-width: 3.5rem;
+}
+
+.pro-scale-opt {
+  color: #818cf8;
+  font-weight: 600;
+}
+
+.pro-scale-row--active .pro-scale-opt {
+  color: #a5b4fc;
+}
+
 /* ── Session lock blur overlay ── */
 .risk-office-pro--locked .pro-blur-layer {
   filter: blur(10px) saturate(0.55);

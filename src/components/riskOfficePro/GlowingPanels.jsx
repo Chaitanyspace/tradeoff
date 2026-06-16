@@ -67,7 +67,10 @@ export function GlowingLotSuggestion({ lotInfo, profileId, tradingDisabled, lock
         </div>
       )}
       {!tradingDisabled && lotInfo.rangeLabel && (
-        <span className="pro-glow-lot-band">Band shifts with balance · now {lotInfo.rangeLabel}</span>
+        <span className="pro-glow-lot-band">
+          Live at ${lotInfo.band?.balance ?? '—'} · band {lotInfo.rangeLabel}
+          {lotInfo.band?.growthMode === 'mild' ? ' · mild growth' : ''}
+        </span>
       )}
       {!tradingDisabled && lotInfo.aPlusOnly && (
         <span className="pro-glow-lot-badge">A+ SETUPS ONLY</span>

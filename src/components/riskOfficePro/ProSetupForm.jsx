@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { previewProfileLots, PRO_DEFAULT_MAX_TRADES, getBalanceBand } from '../../utils/proLotEngine';
+import { previewProfileLots, PRO_DEFAULT_MAX_TRADES, getBalanceBand, previewBandScale } from '../../utils/proLotEngine';
 
 export default function ProSetupForm({ onStart }) {
   const [balance, setBalance] = useState('');
@@ -12,6 +12,7 @@ export default function ProSetupForm({ onStart }) {
   const isValidMaxTrades = !isNaN(numMaxTrades) && numMaxTrades >= 1 && numMaxTrades <= 50;
   const previews = isValidBalance ? previewProfileLots(numBalance) : [];
   const band = isValidBalance ? getBalanceBand(numBalance) : null;
+  const scalePreview = previewBandScale();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -25,8 +26,9 @@ export default function ProSetupForm({ onStart }) {
         <span className="pro-setup-badge">PRO</span>
         <h1>Risk Office Pro</h1>
         <p>
-          Set balance and max trades. Pick your risk level — lot bands grow smoothly
-          as your balance moves ($3–5 at $60 → $6–7 at $115 → $7–9 at $150).
+          Set balance and max trades. Your lot band is calculated from your{' '}
+          <strong>current balance</strong> — it shifts after every trade.
+          Bigger accounts grow risk mildly, not double.
         </p>
       </div>
 
@@ -60,11 +62,28 @@ export default function ProSetupForm({ onStart }) {
 
         {band && (
           <div className="pro-band-hint">
-            At <strong>${numBalance}</strong> your live risk options are{' '}
+            At <strong>${numBalance}</strong> your live options are{' '}
             <strong>{band.stepsLabel}</strong>
-            <span className="pro-band-sub">Band {band.rangeLabel} · updates automatically as balance changes</span>
+            <span className="pro-band-sub">
+              Band {band.rangeLabel} now · recalculates after every trade
+            </span>
           </div>
         )}
+
+        <div className="pro-scale-preview">
+          <span className="pro-scale-title">How bands grow — mild, not rigid</span>
+          <div className="pro-scale-rows">
+            {scalePreview.map((row) => (
+              <div
+                key={row.balance}
+                className={`pro-scale-row ${isValidBalance && Math.abs(row.balance - numBalance) < 25 ? 'pro-scale-row--active' : ''}`}
+              >
+                <span className="pro-scale-bal">${row.balance}</span>
+                <span className="pro-scale-opt">{row.stepsLabel}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {isValidBalance && (
           <div className="pro-profile-grid">

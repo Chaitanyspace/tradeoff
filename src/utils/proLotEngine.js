@@ -1,33 +1,93 @@
-/** Dynamic risk anchors — bands interpolate smoothly as balance changes */
-const RISK_ANCHORS = [
+/**
+ * Flexible risk bands — driven by CURRENT balance, not rigid tiers.
+ *
+ * Below $200: smooth curve through your known comfort zones.
+ * Above $200: mild sub-linear growth (log scale) — account doubles,
+ * risk does NOT double. e.g. $200 → $8–10, $400 → $10–15, $800 → $12–20.
+ */
+
+const ANCHORS = [
   { balance: 30, minLot: 1, maxLot: 2 },
   { balance: 60, minLot: 3, maxLot: 5 },
   { balance: 100, minLot: 5, maxLot: 6 },
   { balance: 115, minLot: 6, maxLot: 7 },
-  { balance: 130, minLot: 6, maxLot: 7 },
   { balance: 150, minLot: 7, maxLot: 9 },
   { balance: 200, minLot: 8, maxLot: 10 },
-  { balance: 250, minLot: 8, maxLot: 11 },
 ];
+
+const MILD_GROWTH_BASE = 200;
+const MILD_MIN_BASE = 8;
+const MILD_MIN_GROWTH = 2;
+const MILD_SPREAD_BASE = 2;
+const MILD_SPREAD_GROWTH = 3;
 
 function lerp(a, b, t) {
   return a + (b - a) * t;
 }
 
-function interpolateAt(balance, key) {
-  if (balance <= RISK_ANCHORS[0].balance) return RISK_ANCHORS[0][key];
-  const last = RISK_ANCHORS[RISK_ANCHORS.length - 1];
-  if (balance >= last.balance) return last[key];
+function interpolateAnchors(balance) {
+  if (balance <= ANCHORS[0].balance) {
+    return { minLot: ANCHORS[0].minLot, maxLot: ANCHORS[0].maxLot };
+  }
 
-  for (let i = 0; i < RISK_ANCHORS.length - 1; i++) {
-    const a = RISK_ANCHORS[i];
-    const b = RISK_ANCHORS[i + 1];
+  for (let i = 0; i < ANCHORS.length - 1; i++) {
+    const a = ANCHORS[i];
+    const b = ANCHORS[i + 1];
     if (balance >= a.balance && balance <= b.balance) {
       const t = (balance - a.balance) / (b.balance - a.balance);
-      return Math.round(lerp(a[key], b[key], t));
+      return {
+        minLot: Math.round(lerp(a.minLot, b.minLot, t)),
+        maxLot: Math.round(lerp(a.maxLot, b.maxLot, t)),
+      };
     }
   }
-  return RISK_ANCHORS[0][key];
+
+  return {
+    minLot: ANCHORS[ANCHORS.length - 1].minLot,
+    maxLot: ANCHORS[ANCHORS.length - 1].maxLot,
+  };
+}
+
+/** Mild log-scale growth above $200 — risk grows slower than the account */
+function computeMildGrowth(balance) {
+  const growth = Math.log2(balance / MILD_GROWTH_BASE);
+  const minLot = Math.round(MILD_MIN_BASE + growth * MILD_MIN_GROWTH);
+  const spread = Math.round(MILD_SPREAD_BASE + growth * MILD_SPREAD_GROWTH);
+  const maxLot = minLot + Math.max(1, spread);
+
+  const pctCap = Math.max(minLot + 1, Math.floor(balance * 0.05));
+  return {
+    minLot,
+    maxLot: Math.min(maxLot, pctCap),
+  };
+}
+
+function computeMinMaxLot(balance) {
+  const bal = Math.max(0, balance);
+
+  if (bal < 1) return { minLot: 1, maxLot: 1 };
+  if (bal >= MILD_GROWTH_BASE) return computeMildGrowth(bal);
+  return interpolateAnchors(bal);
+}
+
+/** Build human-readable step options (not always every dollar) */
+function buildSteps(minLot, maxLot) {
+  const span = maxLot - minLot;
+  if (span === 0) return [minLot];
+  if (span === 1) return [minLot, maxLot];
+  if (span === 2) return [minLot, minLot + 1, maxLot];
+
+  const picks = [
+    minLot,
+    Math.round(minLot + span * 0.33),
+    Math.round(minLot + span * 0.55),
+    Math.round(minLot + span * 0.78),
+    maxLot,
+  ];
+
+  return [...new Set(picks.map((v) => Math.max(minLot, Math.min(maxLot, v))))].sort(
+    (a, b) => a - b
+  );
 }
 
 export const AGGRESSION_PROFILES = {
@@ -78,7 +138,6 @@ export const AGGRESSION_PROFILES = {
   },
 };
 
-/** Legacy profile id migration */
 export const PROFILE_ALIASES = {
   safest: 'lowestRisk',
   safestAggressive: 'lowestRisk',
@@ -86,10 +145,9 @@ export const PROFILE_ALIASES = {
 };
 
 export function getBalanceBand(balance) {
-  const minLot = interpolateAt(balance, 'minLot');
-  const maxLot = Math.max(minLot, interpolateAt(balance, 'maxLot'));
-  const steps = [];
-  for (let i = minLot; i <= maxLot; i++) steps.push(i);
+  const { minLot, maxLot: rawMax } = computeMinMaxLot(balance);
+  const maxLot = Math.max(minLot, rawMax);
+  const steps = buildSteps(minLot, maxLot);
   const midLot = steps[Math.floor(steps.length / 2)] ?? minLot;
 
   return {
@@ -99,7 +157,8 @@ export function getBalanceBand(balance) {
     steps,
     stepsLabel: steps.map((s) => `$${s}`).join(' · '),
     rangeLabel: `$${minLot}–$${maxLot}`,
-    balance: Math.round(balance),
+    balance: Math.round(balance * 100) / 100,
+    growthMode: balance >= MILD_GROWTH_BASE ? 'mild' : 'standard',
   };
 }
 
@@ -119,7 +178,7 @@ export function getProfileLot(balance, profileId, lossStreak) {
   const band = getBalanceBand(balance);
   let lot = pickLotFromBand(band, profile.slot);
 
-  let reason = `${profile.label} at $${band.balance} — live band ${band.rangeLabel}.`;
+  let reason = `${profile.label} — $${band.balance} balance → ${band.rangeLabel} band (live).`;
   let aPlusOnly = false;
   let sessionOver = false;
 
@@ -143,10 +202,10 @@ export function getProfileLot(balance, profileId, lossStreak) {
     reason = `Three losses — drop to $${band.minLot}. A+ setups or stop.`;
   } else if (lossStreak === 2) {
     lot = band.minLot;
-    reason = `Two losses in a row — minimum $${band.minLot} at current balance.`;
+    reason = `Two losses in a row — minimum $${band.minLot} at $${band.balance}.`;
   } else if (lossStreak === 1) {
     lot = Math.max(band.minLot, lot - 1);
-    reason = `One loss — step down to $${lot}. Band shifts as balance moves.`;
+    reason = `One loss — step down to $${lot}. Band recalculates as balance moves.`;
   }
 
   lot = Math.max(band.minLot, Math.min(lot, band.maxLot));
@@ -178,6 +237,14 @@ export function previewProfileLots(balance) {
       bandSteps: band.steps,
     };
   });
+}
+
+/** Preview bands at sample balances — useful for setup UI */
+export function previewBandScale(samples = [60, 100, 115, 150, 200, 400, 800]) {
+  return samples.map((b) => ({
+    balance: b,
+    ...getBalanceBand(b),
+  }));
 }
 
 export const PRO_MAX_LOSSES = 4;
