@@ -25,8 +25,8 @@ export default function ProSetupForm({ onStart }) {
         <span className="pro-setup-badge">PRO</span>
         <h1>Risk Office Pro</h1>
         <p>
-          Set your balance, max trades for today, and pick your aggression profile.
-          Lot sizes follow your intuitive bands — always low aggression.
+          Set balance and max trades. Pick your risk level — lot bands grow smoothly
+          as your balance moves ($3–5 at $60 → $6–7 at $115 → $7–9 at $150).
         </p>
       </div>
 
@@ -60,15 +60,16 @@ export default function ProSetupForm({ onStart }) {
 
         {band && (
           <div className="pro-band-hint">
-            At <strong>${numBalance}</strong> your intuitive risk band is{' '}
-            <strong>{band.rangeLabel}</strong> per trade
+            At <strong>${numBalance}</strong> your live risk options are{' '}
+            <strong>{band.stepsLabel}</strong>
+            <span className="pro-band-sub">Band {band.rangeLabel} · updates automatically as balance changes</span>
           </div>
         )}
 
         {isValidBalance && (
           <div className="pro-profile-grid">
             <p className="pro-profile-heading">
-              Choose profile — Safest / Safe / Low Aggressive within your band
+              Pick your risk level — 5 options within your live band
             </p>
             {previews.map((profile) => (
               <button
@@ -91,7 +92,7 @@ export default function ProSetupForm({ onStart }) {
                   <span className="pro-profile-lot-value">${profile.previewLot}</span>
                 </div>
                 <span className="pro-profile-tier">
-                  Band {profile.rangeLabel} · loss limit 4 (fixed)
+                  Options {profile.stepsLabel} · 4 loss limit fixed
                 </span>
               </button>
             ))}

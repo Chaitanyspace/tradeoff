@@ -4,6 +4,7 @@ import {
   PRO_MAX_LOSSES,
   PRO_DEFAULT_MAX_TRADES,
   PRO_WIN_MULTIPLIER,
+  PROFILE_ALIASES,
 } from '../utils/proLotEngine';
 import { getProfitMetrics } from '../utils/giveback';
 import { getProTraderState, getProAlerts } from '../utils/proStateEngine';
@@ -14,13 +15,8 @@ import {
   getTodayKey,
 } from '../utils/storage';
 
-const PROFILE_MIGRATION = {
-  safest: 'safestAggressive',
-  safe: 'safeAggressive',
-};
-
 function normalizeProState(state) {
-  const profile = PROFILE_MIGRATION[state.aggressionProfile] || state.aggressionProfile;
+  const profile = PROFILE_ALIASES[state.aggressionProfile] || state.aggressionProfile;
   return {
     ...state,
     aggressionProfile: profile,

@@ -347,11 +347,124 @@
   margin-bottom: 1.25rem;
 }
 
+.pro-glow-lot--locked {
+  animation: glowPulse 1.5s ease-in-out infinite;
+}
+
 .pro-glow-lot--disabled {
   animation: none;
   opacity: 0.6;
   --glow-color: #6b7280;
   --glow-shadow: rgba(107, 114, 128, 0.3);
+}
+
+.pro-glow-lot-steps {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid color-mix(in srgb, var(--glow-color) 25%, transparent);
+}
+
+.pro-glow-lot-steps-label {
+  display: block;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin-bottom: 0.35rem;
+}
+
+.pro-glow-lot-steps-values {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--glow-color);
+  text-shadow: 0 0 12px var(--glow-shadow);
+  letter-spacing: 0.05em;
+}
+
+.pro-band-sub {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+
+/* ── Session lock blur overlay ── */
+.risk-office-pro--locked .pro-blur-layer {
+  filter: blur(10px) saturate(0.55);
+  opacity: 0.45;
+  pointer-events: none;
+  user-select: none;
+  transition: filter 0.5s ease, opacity 0.5s ease;
+}
+
+.pro-lock-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(10, 10, 14, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: lockFadeIn 0.45s ease;
+}
+
+@keyframes lockFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.pro-lock-focus {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1rem;
+  max-width: 480px;
+  width: 100%;
+  animation: lockSlideUp 0.5s ease;
+}
+
+@keyframes lockSlideUp {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.pro-lock-focus .pro-glow-lot,
+.pro-lock-focus .pro-glow-state,
+.pro-lock-focus .pro-glow-alert {
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+.pro-lock-banner {
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #ef4444;
+  text-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.pro-lock-reset {
+  padding: 0.85rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.pro-lock-reset:hover {
+  border-color: #818cf8;
 }
 
 .pro-glow-lot-label {

@@ -1,10 +1,10 @@
-import { AGGRESSION_PROFILES } from '../../utils/proLotEngine';
+import { AGGRESSION_PROFILES, PROFILE_ALIASES } from '../../utils/proLotEngine';
 
 export default function GlowingStatePanel({ traderState, alerts }) {
   if (!traderState) return null;
 
   return (
-    <div className="pro-glow-panel">
+    <div className="pro-glow-panel pro-glow-keep-sharp">
       <div
         className="pro-glow-state"
         style={{
@@ -32,32 +32,42 @@ export default function GlowingStatePanel({ traderState, alerts }) {
   );
 }
 
-export function GlowingLotSuggestion({ lotInfo, profileId, tradingDisabled }) {
-  const profile = AGGRESSION_PROFILES[profileId];
+export function GlowingLotSuggestion({ lotInfo, profileId, tradingDisabled, lockMessage }) {
+  const resolvedId = PROFILE_ALIASES[profileId] || profileId;
+  const profile = AGGRESSION_PROFILES[resolvedId];
 
   if (!lotInfo) return null;
 
+  const lockColor = '#ef4444';
+  const lockGlow = 'rgba(239, 68, 68, 0.65)';
+
   return (
     <div
-      className={`pro-glow-lot ${tradingDisabled ? 'pro-glow-lot--disabled' : ''}`}
+      className={`pro-glow-lot pro-glow-keep-sharp ${tradingDisabled ? 'pro-glow-lot--locked' : ''}`}
       style={{
-        '--glow-color': profile?.color || '#818cf8',
-        '--glow-shadow': profile?.glow || 'rgba(129, 140, 248, 0.5)',
+        '--glow-color': tradingDisabled ? lockColor : (profile?.color || '#818cf8'),
+        '--glow-shadow': tradingDisabled ? lockGlow : (profile?.glow || 'rgba(129, 140, 248, 0.5)'),
       }}
     >
       <span className="pro-glow-lot-label">
-        {tradingDisabled ? 'TRADING STOPPED' : 'USE THIS LOT SIZE'}
+        {tradingDisabled ? 'SESSION ENDED' : 'USE THIS LOT SIZE'}
       </span>
       <span className="pro-glow-lot-value">
-        {tradingDisabled ? '—' : `$${lotInfo.recommendedLot}`}
+        {tradingDisabled ? 'STOP' : `$${lotInfo.recommendedLot}`}
       </span>
       <p className="pro-glow-lot-reason">
         {tradingDisabled
-          ? 'Session limit reached. Close the platform.'
+          ? lockMessage || 'Session limit reached. Close the platform.'
           : lotInfo.reason}
       </p>
+      {lotInfo.stepsLabel && (
+        <div className="pro-glow-lot-steps">
+          <span className="pro-glow-lot-steps-label">Live options at ${lotInfo.band?.balance ?? '—'}</span>
+          <span className="pro-glow-lot-steps-values">{lotInfo.stepsLabel}</span>
+        </div>
+      )}
       {!tradingDisabled && lotInfo.rangeLabel && (
-        <span className="pro-glow-lot-band">Band: {lotInfo.rangeLabel}</span>
+        <span className="pro-glow-lot-band">Band shifts with balance · now {lotInfo.rangeLabel}</span>
       )}
       {!tradingDisabled && lotInfo.aPlusOnly && (
         <span className="pro-glow-lot-badge">A+ SETUPS ONLY</span>
