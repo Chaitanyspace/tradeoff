@@ -9,9 +9,9 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/" element={<Navigate to="/risk-officer" replace />} />
+          <Route path="/" element={<Navigate to="/risk-office-pro" replace />} />
           <Route path="/journal" element={<Journal />} />
-         
+         <Route path='/risk-officer' element={<RiskOfficer/>}/>
           <Route path="/risk-office-pro" element={<RiskOfficePro />} />
         </Route>
       </Routes>

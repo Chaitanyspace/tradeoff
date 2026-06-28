@@ -7,9 +7,7 @@ export default function Layout() {
       <nav className="nav">
         <div className="nav-brand">TradeOff</div>
         <div className="nav-tabs">
-          <NavLink to="/risk-officer" className={({ isActive }) => isActive ? 'nav-tab active' : 'nav-tab'}>
-            🧠 Risk Officer
-          </NavLink>
+         
           <NavLink to="/risk-office-pro" className={({ isActive }) => isActive ? 'nav-tab active' : 'nav-tab'}>
             ⚡ Risk Office Pro
           </NavLink>
